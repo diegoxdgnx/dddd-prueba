@@ -1,0 +1,31 @@
+name: Enable Auto Merge
+#autoaaa
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+jobs:
+  enable-auto-merge:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Enable auto-merge
+        uses: actions/github-script@v4
+        with:
+          script: |
+            await github.graphql(`
+              mutation($pullRequestId: ID!) {
+                enablePullRequestAutoMerge(input: { pullRequestId: $pullRequestId, mergeMethod: MERGE }) {
+                  pullRequest {
+                    autoMergeRequest {
+                      enabledAt
+                    }
+                  }
+                }
+              }
+            `, {
+              pullRequestId: context.payload.pull_request.node_id
+            });
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+ 
